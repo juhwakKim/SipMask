@@ -31,8 +31,9 @@ class CropSplitFunction(Function):
         height = ctx.height
         width = ctx.width
         n = ctx.n
-        rois = ctx.rois
+        rois  = torch.stack(list(ctx.rois), dim=0)
         grad_input = torch.zeros((c*c, height, width, n), dtype=grad_output.dtype, device=grad_output.device)
+
         crop_split_cuda.crop_split_cuda_backward(grad_output, rois, grad_input, height, width, c, n)
 
         return grad_input, None, None

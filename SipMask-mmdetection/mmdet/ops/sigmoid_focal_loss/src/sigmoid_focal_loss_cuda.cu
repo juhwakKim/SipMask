@@ -9,7 +9,7 @@
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 
-#include <THC/THC.h>
+#include "../../common.hpp"
 #include <THC/THCAtomics.cuh>
 #include <THC/THCDeviceUtils.cuh>
 
@@ -114,7 +114,7 @@ at::Tensor SigmoidFocalLoss_forward_cuda(const at::Tensor &logits,
   dim3 block(512);
 
   if (losses.numel() == 0) {
-    THCudaCheck(cudaGetLastError());
+    C10_CUDA_CHECK(cudaGetLastError());
     return losses;
   }
 
@@ -125,7 +125,7 @@ at::Tensor SigmoidFocalLoss_forward_cuda(const at::Tensor &logits,
             targets.contiguous().data<int64_t>(), num_classes, gamma, alpha,
             num_samples, losses.data<scalar_t>());
       });
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
   return losses;
 }
 
@@ -153,7 +153,7 @@ at::Tensor SigmoidFocalLoss_backward_cuda(const at::Tensor &logits,
   dim3 block(512);
 
   if (d_logits.numel() == 0) {
-    THCudaCheck(cudaGetLastError());
+    C10_CUDA_CHECK(cudaGetLastError());
     return d_logits;
   }
 
@@ -166,6 +166,6 @@ at::Tensor SigmoidFocalLoss_backward_cuda(const at::Tensor &logits,
             num_samples, d_logits.data<scalar_t>());
       });
 
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
   return d_logits;
 }
