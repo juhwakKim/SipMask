@@ -43,7 +43,7 @@ class FeatureAlign(nn.Module):
 
 
     def init_weights(self,bias_value=0):
-        torch.nn.init.normal_(self.conv_offset.weight, std=0.0)
+        torch.nn.init.normal_(self.conv_offset.weight, std=0.01)
         torch.nn.init.normal_(self.conv_adaption.weight, std=0.01)
 
     def forward(self, x, shape):
