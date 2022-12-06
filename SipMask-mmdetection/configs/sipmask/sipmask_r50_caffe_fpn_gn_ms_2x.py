@@ -3,7 +3,7 @@ model = dict(
     type='SipMask',
     pretrained='open-mmlab://resnet50_caffe',
     backbone=dict(
-        type='ResNet',
+        type='SipMaskResNet',
         depth=50,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
@@ -15,8 +15,7 @@ model = dict(
         in_channels=[256, 512, 1024, 2048],
         out_channels=256,
         start_level=1,
-        add_extra_convs=True,
-        extra_convs_on_inputs=False,  # use P5
+        add_extra_convs='on_output',
         num_outs=5,
         relu_before_extra_convs=True),
     bbox_head=dict(
@@ -51,20 +50,20 @@ train_cfg = dict(
 test_cfg = dict(
     nms_pre=1000,
     min_bbox_size=0,
-    score_thr=0.3,
+    score_thr=0.05,
     nms=dict(type='nms', iou_thr=0.5),
-
     max_per_img=100)
 # dataset settings
 dataset_type = 'CocoDataset'
-data_root = '/media/juhk/_/all_rgb_datasets_merged/'
-classes = ('icebox', 'box', 'pouch', 'sack', 'bottle',)
+data_root = '/media/juhk/_/coco_style_oneclass/'
+# data_root = '/home/juhk/Downloads/all_rgb_datasets_merged/'
+
 img_norm_cfg = dict(
     mean=[102.9801, 115.9465, 122.7717], std=[1.0, 1.0, 1.0], to_rgb=False)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='Resize', img_scale=[(600, 400),(600, 320)], keep_ratio=True),
+    dict(type='Resize', img_scale=[(640, 640)], keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
@@ -76,7 +75,7 @@ test_pipeline = [
     # dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(1024, 1024),
+        img_scale=(640, 640),
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
@@ -87,24 +86,51 @@ test_pipeline = [
             dict(type='Collect', keys=['img']),
         ])
 ]
+# classes = ('icebox', 'box', 'pouch', 'sack', 'bottle',)
+# data = dict(
+#     imgs_per_gpu=4,
+#     workers_per_gpu=2,
+#     train=dict(
+#         type=dataset_type,
+#         ann_file=data_root + 'annotations/train.json',
+#         img_prefix=data_root + 'images/',
+#         classes=classes,
+#         pipeline=train_pipeline),
+#     val=dict(
+#         type=dataset_type,
+#         ann_file=data_root + 'annotations/val.json',
+#         img_prefix=data_root + 'images/',
+#         classes=classes,
+#         pipeline=test_pipeline),
+#     test=dict(
+#         type=dataset_type,
+#         ann_file=data_root + 'annotations/val.json',
+#         img_prefix=data_root + 'images/',
+#         classes=classes,
+#         pipeline=test_pipeline))
+classes = ('Carton',)
 data = dict(
-    imgs_per_gpu=4,
-    workers_per_gpu=4,
+    imgs_per_gpu=2,
+    workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/train.json',
-        img_prefix=data_root + 'images/',
+        ann_file=data_root + 'annotations/instances_train2017.json',
+        img_prefix=data_root + 'images/train2017/',
+        classes=classes,
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/val.json',
-        img_prefix=data_root + 'images/',
+        ann_file=data_root + 'annotations/instances_val2017.json',
+        img_prefix=data_root + 'images/val2017/',
+        classes=classes,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/val.json',
-        img_prefix=data_root + 'images/',
+        ann_file=data_root + 'annotations/instances_val2017.json',
+        img_prefix=data_root + 'images/val2017/',
+        classes=classes,
         pipeline=test_pipeline))
+
 evaluation = dict(interval=1, metric='segm')
 # optimizer
 optimizer = dict(
@@ -112,7 +138,7 @@ optimizer = dict(
     lr=0.01,
     momentum=0.9,
     weight_decay=0.0001,
-    paramwise_options=dict(bias_lr_mult=2., bias_decay_mult=0.))
+    paramwise_cfg=dict(bias_lr_mult=2., bias_decay_mult=0.))
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(

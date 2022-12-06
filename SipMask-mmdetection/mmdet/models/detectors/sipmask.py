@@ -1,9 +1,9 @@
-from ..registry import DETECTORS
-from .single_stage import SingleStageDetector
+from ..builder import DETECTORS
+from .single_stage_sipmask import SingleStageSipMaskDetector
 
 
 @DETECTORS.register_module
-class SipMask(SingleStageDetector):
+class SipMask(SingleStageSipMaskDetector):
 
     def __init__(self,
                  backbone,

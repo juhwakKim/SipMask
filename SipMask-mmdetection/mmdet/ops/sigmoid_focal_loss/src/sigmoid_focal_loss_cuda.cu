@@ -9,7 +9,7 @@
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 
-#include "../../common.hpp"
+#include "common.hpp"
 #include <THC/THCAtomics.cuh>
 #include <THC/THCDeviceUtils.cuh>
 

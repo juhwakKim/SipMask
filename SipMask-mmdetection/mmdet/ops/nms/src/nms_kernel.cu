@@ -8,7 +8,7 @@
 
 #include <ATen/cuda/Exceptions.h>
 // #include <THC/THC.h>
-#include "../../common.hpp"
+#include "common.hpp"
 #include <THC/THCDeviceUtils.cuh>
 
 #include <vector>
