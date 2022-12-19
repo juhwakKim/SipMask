@@ -11,6 +11,7 @@ from mmdet.ops import DeformConv, CropSplit, CropSplitGt
 import torch.nn.functional as F
 import pycocotools.mask as mask_util
 import numpy as np
+
 INF = 1e8
 
 def center_size(boxes):
@@ -552,6 +553,7 @@ class SipMaskHead(nn.Module):
                           scale_factor,
                           cfg,
                           rescale=False):
+
         assert len(cls_scores) == len(bbox_preds) == len(mlvl_points)
         mlvl_bboxes = []
         mlvl_scores = []
@@ -630,7 +632,7 @@ class SipMaskHead(nn.Module):
                 masks = F.interpolate(pos_masks.unsqueeze(0), scale_factor=scale / scale_factor[3:1:-1], mode='bilinear', align_corners=False).squeeze(0)
             else:
                 masks = F.interpolate(pos_masks.unsqueeze(0), scale_factor=scale / scale_factor, mode='bilinear', align_corners=False).squeeze(0)
-            masks.gt_(0.4)
+            masks.gt_(0.5).float()
 
             if self.rescoring_flag:
                 pred_iou = pos_masks.unsqueeze(1)
@@ -643,8 +645,9 @@ class SipMaskHead(nn.Module):
                 mask_scores = [mask_scores[det_labels.cpu().numpy() == i] for i in range(self.num_classes - 1)]
 
         for i in range(det_bboxes.shape[0]):
+            torch.cuda.synchronize()
             label = det_labels[i]
-            mask = masks[i].cpu().numpy()
+            mask = masks[i].byte().cpu().numpy()
             if rescale:
                 im_mask = np.zeros((ori_shape[0], ori_shape[1]), dtype=np.uint8)
                 shape = np.minimum(mask.shape, ori_shape[0:2])
@@ -652,9 +655,9 @@ class SipMaskHead(nn.Module):
                 im_mask = np.zeros((img_shape[0], img_shape[1]), dtype=np.uint8)
                 shape = np.minimum(mask.shape, img_shape[0:2])
             im_mask[:shape[0],:shape[1]] = mask[:shape[0],:shape[1]]
-            rle = mask_util.encode(
-                np.array(im_mask[:, :, np.newaxis], order='F'))[0]
-            cls_segms[label].append(rle)
+            # rle = mask_util.encode(
+                # np.array(im_mask[:, :, np.newaxis], order='F'))[0]
+            cls_segms[label].append(im_mask)
 
         if self.rescoring_flag:
             return det_bboxes, det_labels, (cls_segms, mask_scores)
