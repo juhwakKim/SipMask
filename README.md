@@ -1,172 +1,410 @@
-# SipMask
-This is the official implementation of "*[SipMask: Spatial Information Preservation for Fast Image and Video Instance Segmentation (ECCV2020)](https://arxiv.org/pdf/2007.14772.pdf)*" built on the open-source mmdetection and maskrcnn-benchmark.
+<div align="center">
+  <img src="resources/mmdet-logo.png" width="600"/>
+  <div>&nbsp;</div>
+  <div align="center">
+    <b><font size="5">OpenMMLab website</font></b>
+    <sup>
+      <a href="https://openmmlab.com">
+        <i><font size="4">HOT</font></i>
+      </a>
+    </sup>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b><font size="5">OpenMMLab platform</font></b>
+    <sup>
+      <a href="https://platform.openmmlab.com">
+        <i><font size="4">TRY IT OUT</font></i>
+      </a>
+    </sup>
+  </div>
+  <div>&nbsp;</div>
 
-- **Single-stage method for both image and video instance segmentation.**
-- Two different versions are provided: **high-accuracy** version and **real-time (fast)** version.
-- **Image instance segmentation** is built on both [mmdetection](https://github.com/open-mmlab/mmdetection) and [maskrcnn-benchmark](https://github.com/facebookresearch/maskrcnn-benchmark).
-- **Video instance segmentation** is built on [mmdetection](https://github.com/open-mmlab/mmdetection).
-- Datasets: [MS COCO](http://cocodataset.org/#home) for image instance segmentation and [YouTube-VIS](https://youtube-vos.org/dataset/vis/) for video instance segmentation.
-- **Json** results of SipMask+ResNet50 on YouTube-VIS: [Single-scale training (32.5)](https://drive.google.com/file/d/1XG-VwQVuhiSqh-2CMO1peyFygk1zKITQ/view?usp=sharing) and [Multi-scale training (33.7)](https://drive.google.com/file/d/1XG-VwQVuhiSqh-2CMO1peyFygk1zKITQ/view?usp=sharing)
+[![PyPI](https://img.shields.io/pypi/v/mmdet)](https://pypi.org/project/mmdet)
+[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdetection.readthedocs.io/en/latest/)
+[![badge](https://github.com/open-mmlab/mmdetection/workflows/build/badge.svg)](https://github.com/open-mmlab/mmdetection/actions)
+[![codecov](https://codecov.io/gh/open-mmlab/mmdetection/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdetection)
+[![license](https://img.shields.io/github/license/open-mmlab/mmdetection.svg)](https://github.com/open-mmlab/mmdetection/blob/master/LICENSE)
+[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmdetection.svg)](https://github.com/open-mmlab/mmdetection/issues)
+[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmdetection.svg)](https://github.com/open-mmlab/mmdetection/issues)
 
+[📘Documentation](https://mmdetection.readthedocs.io/en/stable/) |
+[🛠️Installation](https://mmdetection.readthedocs.io/en/stable/get_started.html) |
+[👀Model Zoo](https://mmdetection.readthedocs.io/en/stable/model_zoo.html) |
+[🆕Update News](https://mmdetection.readthedocs.io/en/stable/changelog.html) |
+[🚀Ongoing Projects](https://github.com/open-mmlab/mmdetection/projects) |
+[🤔Reporting Issues](https://github.com/open-mmlab/mmdetection/issues/new/choose)
 
-<table>
-    <tr>
-        <td ><center><img src="demo/000000059349_our_new.jpg" height="180"> </center></td>
-        <td ><center><img src="demo/000000080046_our_new.jpg" height="180" > </center></td>
-        <td ><center><img src="demo/000000118888_our_new.jpg" height="180" > </center></td>
-    </tr>
-</table>
-<table>
-    <tr>
-        <td ><center><img src="demo/179.gif" height="150"> </center></td>
-        <td ><center><img src="demo/184.gif" height="150" > </center></td>
-        <td ><center><img src="demo/249.gif" height="150" > </center></td>
-    </tr>
-</table>
+</div>
 
+<div align="center">
+
+English | [简体中文](README_zh-CN.md)
+
+</div>
+
+<div align="center">
+  <a href="https://openmmlab.medium.com/" style="text-decoration:none;">
+    <img src="https://user-images.githubusercontent.com/25839884/218352562-cdded397-b0f3-4ca1-b8dd-a60df8dca75b.png" width="3%" alt="" /></a>
+  <img src="https://user-images.githubusercontent.com/25839884/218346358-56cc8e2f-a2b8-487f-9088-32480cceabcf.png" width="3%" alt="" />
+  <a href="https://discord.gg/raweFPmdzG" style="text-decoration:none;">
+    <img src="https://user-images.githubusercontent.com/25839884/218347213-c080267f-cbb6-443e-8532-8e1ed9a58ea9.png" width="3%" alt="" /></a>
+  <img src="https://user-images.githubusercontent.com/25839884/218346358-56cc8e2f-a2b8-487f-9088-32480cceabcf.png" width="3%" alt="" />
+  <a href="https://twitter.com/OpenMMLab" style="text-decoration:none;">
+    <img src="https://user-images.githubusercontent.com/25839884/218346637-d30c8a0f-3eba-4699-8131-512fb06d46db.png" width="3%" alt="" /></a>
+  <img src="https://user-images.githubusercontent.com/25839884/218346358-56cc8e2f-a2b8-487f-9088-32480cceabcf.png" width="3%" alt="" />
+  <a href="https://www.youtube.com/openmmlab" style="text-decoration:none;">
+    <img src="https://user-images.githubusercontent.com/25839884/218346691-ceb2116a-465a-40af-8424-9f30d2348ca9.png" width="3%" alt="" /></a>
+</div>
 ## Introduction
-Single-stage instance segmentation approaches have recently gained popularity due to their speed and simplicity, but are still lagging behind in accuracy, compared to two-stage methods. We propose a fast single-stage instance segmentation method, called SipMask, that preserves instance-specific spatial information by separating the mask prediction of an instance to different sub-regions of a detected bounding-box. Our main contribution is a novel light-weight spatial preservation (SP) module that generates a separate  set of spatial coefficients for each sub-region within a bounding-box, leading to improved mask predictions. It also enables accurate delineation of spatially adjacent instances. Further, we introduce a mask alignment weighting loss and a feature alignment scheme to better correlate mask prediction with object detection.
 
-## SipMask-benchmark (image instance segmentation)
-- This project is built on the official implementation of [FCOS](https://github.com/tianzhi0549/FCOS), which is based on [maskrcnn-benchmark](https://github.com/facebookresearch/maskrcnn-benchmark). 
-- High-quality version is provided.
-- Please use [SipMask-benchmark](SipMask-benchmark/) and refer to [INSTALL.md](SipMask-benchmark/INSTALL.md) for installation.
-- PyTorch1.1.0 and cuda9.0/10.0 are used by me.
+MMDetection is an open source object detection toolbox based on PyTorch. It is
+a part of the [OpenMMLab](https://openmmlab.com/) project.
 
-#####  Train with multiple GPUs
+The master branch works with **PyTorch 1.5+**.
 
-```shell
-python -m torch.distributed.launch --nproc_per_node=4 --master_port=$((RANDOM+10000)) tools/train_net.py --config-file ${CONFIG_FILE} DATALOADER.NUM_WORKERS 2 OUTPUT_DIR ${OUTPUT_PATH}
-e.g.,
-python -m torch.distributed.launch --nproc_per_node=4 --master_port=$((RANDOM+10000)) tools/train_net.py --config-file configs/sipmask/sipmask_R_50_FPN_1x.yaml DATALOADER.NUM_WORKERS 2 OUTPUT_DIR training_dir/sipmask_R_50_FPN_1x
-```
-#####  Test with a single GPU
+<img src="https://user-images.githubusercontent.com/12907710/137271636-56ba1cd2-b110-4812-8221-b4c120320aa9.png"/>
 
-```shell
-python tools/test_net.py --config-file ${CONFIG_FILE} MODEL.WEIGHT ${CHECKPOINT_FILE} TEST.IMS_PER_BATCH 4
-e.g.,
-python tools/test_net.py --config-file configs/sipmask/sipmask_R_50_FPN_1x.yaml MODEL.WEIGHT  training_dir/SipMask_R50_1x.pth TEST.IMS_PER_BATCH 4 
-```
+<details open>
+<summary>Major features</summary>
 
-- CONFIG_FILE  of Sipmask is under the folder of [SipMask-benchmark/configs/sipmask](SipMask-benchmark/configs/sipmask).
+- **Modular Design**
 
+  We decompose the detection framework into different components and one can easily construct a customized object detection framework by combining different modules.
 
-##### Results
-|    name   |    backbone     |  input size |  epoch | ms-train | val. box AP | val. mask AP | download|
-| :--------:| :-------------: | :-----------:| :---------: | :-----: | :------: | :------: | :----------: |
-| SipMask  |     R50     |  800 &times; 1333|  1x  |   no  |    39.5    |    34.2   |          [model](https://drive.google.com/open?id=11lc6zOSURYca0jCbxH-tNnd6atYyPSf2)         |
-| SipMask  |     R101    |  800 &times; 1333  |  3x  |  yes    |    44.1  |    37.8    |       [model](https://drive.google.com/open?id=13_KwrGVE31c7Ts4IqGlwDzzopwZUYb65)         |
+- **Support of multiple frameworks out of box**
 
+  The toolbox directly supports popular and contemporary detection frameworks, *e.g.* Faster RCNN, Mask RCNN, RetinaNet, etc.
 
-## SipMask-mmdetection (image instance segmentation)
-- This project is built on [mmdetection](https://github.com/open-mmlab/mmdetection).
-- High-quality version and real-time version are both provided.
-- Please use [SipMask-mmdetection](SipMask-mmdetection/) and refer to [INSTALL.md](SipMask-mmdetection/docs/INSTALL.md) for installation.
-- PyTorch1.1.0, cuda9.0/10.0, and mmcv0.4.3 are used by me.
-#####  Train with multiple GPUs
+- **High efficiency**
 
-```shell
-./tools/dist_train.sh ${CONFIG_FILE} ${GPU_NUM} [optional arguments]
-e.g.,
-CUDA_VISIBLE_DEVICES=0,1,2,3 ./tools/dist_train.sh configs/sipmask/sipmask_r50_caffe_fpn_gn_1x_4gpu.py 4 --validate
-```
-#####  Test with a single GPU
+  All basic bbox and mask operations run on GPUs. The training speed is faster than or comparable to other codebases, including [Detectron2](https://github.com/facebookresearch/detectron2), [maskrcnn-benchmark](https://github.com/facebookresearch/maskrcnn-benchmark) and [SimpleDet](https://github.com/TuSimple/simpledet).
 
-```shell
-python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}] [--eval ${EVAL_METRICS}] [--show]
-e.g., 
-python tools/test.py ./configs/sipmask/sipmask_r50_caffe_fpn_gn_1x_4gpu.py ./work_dirs/sipmask_r50_caffe_1x.pth --out results.pkl --eval bbox segm
-```
+- **State of the art**
 
-#####  Inference with saved results
+  The toolbox stems from the codebase developed by the *MMDet* team, who won [COCO Detection Challenge](http://cocodataset.org/#detection-leaderboard) in 2018, and we keep pushing it forward.
 
-With our trained model, detection results of an image can be visualized using the following command.
-```shell
-python ./demo/sipmask_demo.py ${CONFIG_FILE} ${CHECKPOINT_FILE} ${IMAGE_FILE} [--out ${OUT_PATH}]
-e.g.,
-python ./demo/sipmask_demo.py ./configs/sipmask/sipmask_r50_caffe_fpn_gn_1x_4gpu.py ./sipmask_r50_caffe_1x.pth ./demo/demo.jpg --out ./demo/aa.jpg
-```
+</details>
 
+Apart from MMDetection, we also released a library [mmcv](https://github.com/open-mmlab/mmcv) for computer vision research, which is heavily depended on by this toolbox.
 
+## What's New
 
-- CONFIG_FILE  of Sipmask is under the folder of [SipMask-mmdetection/configs/sipmask](SipMask-mmdetection/configs/sipmask).
+### 💎 Stable version
 
+**2.28.2** was released in 27/2/2023:
 
-##### Results
-|    name     |    backbone     |  input size |  epoch   | ms-train | GN | val. box AP | val. mask AP | download|
-| :---------: | :-------------: | :-------------------: | :-----: | :-----: | :-----:| :-----: |:------: | :-----------------: |
-|   SipMask   |     R50     |  800&times;1333  |  1x  |   no  |  yes  |    38.2 |    33.5 |  [model](https://drive.google.com/open?id=1t-RSMObxjeSJvHW1tQl8uBUQUU8RKTZO)         |
-|   SipMask   |     R50     |  800&times;1333   |  2x  |  yes |   yes  |   40.8 |   35.6  |  [model](https://drive.google.com/open?id=1r7u2WUOuFSWRfRBoWRCADJo7nEchwFzq)         |
-|   SipMask   |     R101     |  800&times;1333   |  4x  |  yes |   yes  |   43.6 |   37.8  |  [model](https://drive.google.com/file/d/1kAoZBMk8f1sd7eIlkizv2onnIU5FGOfK/view?usp=sharing)         |
-|   SipMask   |     R50     |  544&times;544  |  6x  |  yes |   no  |   36.0 |   31.7  |  [model](https://drive.google.com/file/d/1IFVJN_ZWvF13bqocfFeT42gN2h0F1hFZ/view?usp=sharing)         |
-|   SipMask   |     R50     |  544&times;544  |  10x  |  yes |   yes  |   37.1 |   32.4  |  [model](https://drive.google.com/file/d/1B2cr5gK1yM4KDO5DL7snlazFnILLk_2Q/view?usp=sharing)         |
-|   SipMask   |     R101    |  544&times;544   |  6x  |  yes |   no  |   38.4 |  33.6  |  [model](https://drive.google.com/file/d/1KrLEKjRzaZ_eiaZ83dIgqQT7V2z1ywA9/view?usp=sharing)         |
-|   SipMask   |     R101    |  544&times;544   |  10x  |  yes |   yes  |   40.3 |   34.8 |  [model](https://drive.google.com/file/d/1-KZI9xyoaX-8yEXqgWlqsmrh2buGrFoE/view?usp=sharing)         |
-|   SipMask++ |     R101-D    |  544&times;544   |  6x  |  yes |   no  |   40.1 |   35.2 |  [model](https://drive.google.com/file/d/1evdCVqGVKfKrO1RHivuqF1FaDF54gXh9/view?usp=sharing)         |
-|   SipMask++ |     R101-D    |  544&times;544   |  10x  |  yes |   yes  |   41.3 |   36.1 |  [model](https://drive.google.com/file/d/1APPkFQ8U4HJ4B8xhcyyn-rB8uOZqJGa7/view?usp=sharing)         |
+- Fixed some known documentation, configuration and linking error issues
 
+Please refer to [changelog.md](docs/en/changelog.md) for details and release history.
 
-- GN indicates group normalization used in prediction branch.
-- Model with the input size of 800&times;1333 fcoses on high accuracy, which is trained in RetinaNet style.
-- Model with the input size of 544&times;544 fcoses on fast speed, which is trained in SSD style.
-- ++ indicates adding deformable convolutions with interval of 3 in backbone and mask re-scoring module.
+For compatibility changes between different versions of MMDetection, please refer to [compatibility.md](docs/en/compatibility.md).
 
-## SipMask-VIS (video instance segmentation)
-- This project is an implementation for video instance segmenation based on [mmdetection](https://github.com/open-mmlab/mmdetection). 
-- Please use [SipMask-VIS](SipMask-VIS/) and refer to [INSTALL.md](SipMask-VIS/INSTALL.md) for installation.
-- PyTorch1.1.0, cuda9.0/10.0, and mmcv0.2.12 are used by me.
+### 🌟 Preview of 3.x version
 
-Please note that, to run YouTube-VIS dataset like [MaskTrackRCNN](https://github.com/youtubevos/MaskTrackRCNN), install the cocoapi for youtube-vis instead of installing the original cocoapi for coco as follows.
-```shell
-pip install git+https://github.com/youtubevos/cocoapi.git#"egg=pycocotools&subdirectory=PythonAPI"
-or
-cd SipMask-VIS/pycocotools/cocoapi/PythonAPI
-python setup.py build_ext install
-```
+#### Highlight
 
-#####  Train with multiple GPUs
+We are excited to announce our latest work on real-time object recognition tasks, **RTMDet**, a family of fully convolutional single-stage detectors. RTMDet not only achieves the best parameter-accuracy trade-off on object detection from tiny to extra-large model sizes but also obtains new state-of-the-art performance on instance segmentation and rotated object detection tasks. Details can be found in the [technical report](https://arxiv.org/abs/2212.07784). Pre-trained models are [here](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/rtmdet).
 
-```shell
-./tools/dist_train.sh ${CONFIG_FILE} ${GPU_NUM}
-e.g.,
-CUDA_VISIBLE_DEVICES=0,1,2,3 ./toools/dist_train.sh ./configs/sipmask/sipmask_r50_caffe_fpn_gn_1x_4gpu.py 4
-```
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/rtmdet-an-empirical-study-of-designing-real/real-time-instance-segmentation-on-mscoco)](https://paperswithcode.com/sota/real-time-instance-segmentation-on-mscoco?p=rtmdet-an-empirical-study-of-designing-real)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/rtmdet-an-empirical-study-of-designing-real/object-detection-in-aerial-images-on-dota-1)](https://paperswithcode.com/sota/object-detection-in-aerial-images-on-dota-1?p=rtmdet-an-empirical-study-of-designing-real)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/rtmdet-an-empirical-study-of-designing-real/object-detection-in-aerial-images-on-hrsc2016)](https://paperswithcode.com/sota/object-detection-in-aerial-images-on-hrsc2016?p=rtmdet-an-empirical-study-of-designing-real)
 
-#####  Test with a single GPU
+| Task                     | Dataset | AP                                   | FPS(TRT FP16 BS1 3090) |
+| ------------------------ | ------- | ------------------------------------ | ---------------------- |
+| Object Detection         | COCO    | 52.8                                 | 322                    |
+| Instance Segmentation    | COCO    | 44.6                                 | 188                    |
+| Rotated Object Detection | DOTA    | 78.9(single-scale)/81.3(multi-scale) | 121                    |
 
-```shell
-python tools/test_video.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}] --eval segm
-e.g.,
-python ./tools/test_video.py configs/sipmask/sipmask_r50_caffe_fpn_gn_1x_4gpu.py ./work_dirs/sipmask_r50_fpn_1x.pth --out results.pkl --eval segm
-```
-If you want to save the results of video instance segmentation, please use the following command:
-```shell
-python tools/test_video.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}] --eval segm --show --save_path= ${SAVE_PATH}
-```
+<div align=center>
+<img src="https://user-images.githubusercontent.com/12907710/208044554-1e8de6b5-48d8-44e4-a7b5-75076c7ebb71.png"/>
+</div>
 
-- CONFIG_FILE  of SipMask-VIS is under the folder of [SipMask-VIS/configs/sipmask](SipMask-VIS/configs/sipmask).
-- The model pretrained on MS COCO dataset is used for weight initialization.
+A brand new version of **MMDetection v3.0.0rc6** was released in 27/2/2023:
 
+- Support [Boxinst](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/boxinst), [Objects365 Dataset](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/objects365), and [Separated and Occluded COCO metric](https://github.com/open-mmlab/mmdetection/tree/3.x/docs/en/user_guides/useful_tools.md#coco-separated--occluded-mask-metric)
+- Support [ConvNeXt-V2](https://github.com/open-mmlab/mmdetection/tree/3.x/projects/ConvNeXt-V2), [DiffusionDet](https://github.com/open-mmlab/mmdetection/tree/3.x/projects/DiffusionDet), and inference of [EfficientDet](https://github.com/open-mmlab/mmdetection/tree/3.x/projects/EfficientDet) and [Detic](https://github.com/open-mmlab/mmdetection/tree/3.x/projects/Detic) in `Projects`
+- Refactor [DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/detr) series and support [Conditional-DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/conditional_detr), [DAB-DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/dab_detr), and [DINO](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/dino)
+- Support DetInferencer, Test Time Augmentation, and auto import modules from registry
+- Support RTMDet-Ins ONNXRuntime and TensorRT [deployment](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/rtmdet/README.md#deployment-tutorial)
+- Support [calculating FLOPs of detectors](https://github.com/open-mmlab/mmdetection/tree/3.x/docs/en/user_guides/useful_tools.md#Model-Complexity)
 
-##### Results
-|    name |    backbone     |  input size |  epoch   | ms-train | val. mask AP | download|
-| :--------:| :-------------: | :-------------------:| :-----: | :-----: | :------: | :-----------------: |
-| SipMask |     R50   |  360 &times; 640  |  1x  |   no  |    32.5     |          [model](https://drive.google.com/file/d/1HIQyzApw6b7CUdTxchZT_TIcGYcDodbn/view?usp=sharing)         |
-| SipMask |     R50   |  360 &times; 640  |  1x  |   yes  |    33.7     |          [model](https://drive.google.com/file/d/1BWU8_eaDkGcJ5YEXRzs5oDg6E3adgXWt/view?usp=sharing)         |
+Find more new features in [3.x branch](https://github.com/open-mmlab/mmdetection/tree/3.x). Issues and PRs are welcome!
 
-- The generated results on YouTube-VIS should be uploaded to [codalab](https://competitions.codalab.org/competitions/20128#participate-submit_results) for evaluation.
+## Installation
+
+Please refer to [Installation](docs/en/get_started.md/#Installation) for installation instructions.
+
+## Getting Started
+
+Please see [get_started.md](docs/en/get_started.md) for the basic usage of MMDetection. We provide [colab tutorial](demo/MMDet_Tutorial.ipynb) and [instance segmentation colab tutorial](demo/MMDet_InstanceSeg_Tutorial.ipynb), and other tutorials for:
+
+- [with existing dataset](docs/en/1_exist_data_model.md)
+- [with new dataset](docs/en/2_new_data_model.md)
+- [with existing dataset_new_model](docs/en/3_exist_data_new_model.md)
+- [learn about configs](docs/en/tutorials/config.md)
+- [customize_datasets](docs/en/tutorials/customize_dataset.md)
+- [customize data pipelines](docs/en/tutorials/data_pipeline.md)
+- [customize_models](docs/en/tutorials/customize_models.md)
+- [customize runtime settings](docs/en/tutorials/customize_runtime.md)
+- [customize_losses](docs/en/tutorials/customize_losses.md)
+- [finetuning models](docs/en/tutorials/finetune.md)
+- [export a model to ONNX](docs/en/tutorials/pytorch2onnx.md)
+- [export ONNX to TRT](docs/en/tutorials/onnx2tensorrt.md)
+- [weight initialization](docs/en/tutorials/init_cfg.md)
+- [how to xxx](docs/en/tutorials/how_to.md)
+
+## Overview of Benchmark and Model Zoo
+
+Results and models are available in the [model zoo](docs/en/model_zoo.md).
+
+<div align="center">
+  <b>Architectures</b>
+</div>
+<table align="center">
+  <tbody>
+    <tr align="center" valign="bottom">
+      <td>
+        <b>Object Detection</b>
+      </td>
+      <td>
+        <b>Instance Segmentation</b>
+      </td>
+      <td>
+        <b>Panoptic Segmentation</b>
+      </td>
+      <td>
+        <b>Other</b>
+      </td>
+    </tr>
+    <tr valign="top">
+      <td>
+        <ul>
+            <li><a href="configs/fast_rcnn">Fast R-CNN (ICCV'2015)</a></li>
+            <li><a href="configs/faster_rcnn">Faster R-CNN (NeurIPS'2015)</a></li>
+            <li><a href="configs/rpn">RPN (NeurIPS'2015)</a></li>
+            <li><a href="configs/ssd">SSD (ECCV'2016)</a></li>
+            <li><a href="configs/retinanet">RetinaNet (ICCV'2017)</a></li>
+            <li><a href="configs/cascade_rcnn">Cascade R-CNN (CVPR'2018)</a></li>
+            <li><a href="configs/yolo">YOLOv3 (ArXiv'2018)</a></li>
+            <li><a href="configs/cornernet">CornerNet (ECCV'2018)</a></li>
+            <li><a href="configs/grid_rcnn">Grid R-CNN (CVPR'2019)</a></li>
+            <li><a href="configs/guided_anchoring">Guided Anchoring (CVPR'2019)</a></li>
+            <li><a href="configs/fsaf">FSAF (CVPR'2019)</a></li>
+            <li><a href="configs/centernet">CenterNet (ArXiv'2019)</a></li>
+            <li><a href="configs/libra_rcnn">Libra R-CNN (CVPR'2019)</a></li>
+            <li><a href="configs/tridentnet">TridentNet (ICCV'2019)</a></li>
+            <li><a href="configs/fcos">FCOS (ICCV'2019)</a></li>
+            <li><a href="configs/reppoints">RepPoints (ICCV'2019)</a></li>
+            <li><a href="configs/free_anchor">FreeAnchor (NeurIPS'2019)</a></li>
+            <li><a href="configs/cascade_rpn">CascadeRPN (NeurIPS'2019)</a></li>
+            <li><a href="configs/foveabox">Foveabox (TIP'2020)</a></li>
+            <li><a href="configs/double_heads">Double-Head R-CNN (CVPR'2020)</a></li>
+            <li><a href="configs/atss">ATSS (CVPR'2020)</a></li>
+            <li><a href="configs/nas_fcos">NAS-FCOS (CVPR'2020)</a></li>
+            <li><a href="configs/centripetalnet">CentripetalNet (CVPR'2020)</a></li>
+            <li><a href="configs/autoassign">AutoAssign (ArXiv'2020)</a></li>
+            <li><a href="configs/sabl">Side-Aware Boundary Localization (ECCV'2020)</a></li>
+            <li><a href="configs/dynamic_rcnn">Dynamic R-CNN (ECCV'2020)</a></li>
+            <li><a href="configs/detr">DETR (ECCV'2020)</a></li>
+            <li><a href="configs/paa">PAA (ECCV'2020)</a></li>
+            <li><a href="configs/vfnet">VarifocalNet (CVPR'2021)</a></li>
+            <li><a href="configs/sparse_rcnn">Sparse R-CNN (CVPR'2021)</a></li>
+            <li><a href="configs/yolof">YOLOF (CVPR'2021)</a></li>
+            <li><a href="configs/yolox">YOLOX (ArXiv'2021)</a></li>
+            <li><a href="configs/deformable_detr">Deformable DETR (ICLR'2021)</a></li>
+            <li><a href="configs/tood">TOOD (ICCV'2021)</a></li>
+            <li><a href="configs/ddod">DDOD (ACM MM'2021)</a></li>
+      </ul>
+      </td>
+      <td>
+        <ul>
+          <li><a href="configs/mask_rcnn">Mask R-CNN (ICCV'2017)</a></li>
+          <li><a href="configs/cascade_rcnn">Cascade Mask R-CNN (CVPR'2018)</a></li>
+          <li><a href="configs/ms_rcnn">Mask Scoring R-CNN (CVPR'2019)</a></li>
+          <li><a href="configs/htc">Hybrid Task Cascade (CVPR'2019)</a></li>
+          <li><a href="configs/yolact">YOLACT (ICCV'2019)</a></li>
+          <li><a href="configs/instaboost">InstaBoost (ICCV'2019)</a></li>
+          <li><a href="configs/solo">SOLO (ECCV'2020)</a></li>
+          <li><a href="configs/point_rend">PointRend (CVPR'2020)</a></li>
+          <li><a href="configs/detectors">DetectoRS (CVPR'2021)</a></li>
+          <li><a href="configs/solov2">SOLOv2 (NeurIPS'2020)</a></li>
+          <li><a href="configs/scnet">SCNet (AAAI'2021)</a></li>
+          <li><a href="configs/queryinst">QueryInst (ICCV'2021)</a></li>
+          <li><a href="configs/mask2former">Mask2Former (CVPR'2022)</a></li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li><a href="configs/panoptic_fpn">Panoptic FPN (CVPR'2019)</a></li>
+          <li><a href="configs/maskformer">MaskFormer (NeurIPS'2021)</a></li>
+          <li><a href="configs/mask2former">Mask2Former (CVPR'2022)</a></li>
+        </ul>
+      </td>
+      <td>
+        </ul>
+          <li><b>Contrastive Learning</b></li>
+        <ul>
+        <ul>
+          <li><a href="configs/selfsup_pretrain">SwAV (NeurIPS'2020)</a></li>
+          <li><a href="configs/selfsup_pretrain">MoCo (CVPR'2020)</a></li>
+          <li><a href="configs/selfsup_pretrain">MoCov2 (ArXiv'2020)</a></li>
+        </ul>
+        </ul>
+        </ul>
+          <li><b>Distillation</b></li>
+        <ul>
+        <ul>
+          <li><a href="configs/ld">Localization Distillation (CVPR'2022)</a></li>
+          <li><a href="configs/lad">Label Assignment Distillation (WACV'2022)</a></li>
+        </ul>
+        </ul>
+      </ul>
+        <li><b>Receptive Field Search</b></li>
+      <ul>
+        <ul>
+          <li><a href="configs/rfnext">RF-Next (TPAMI'2022)</a></li>
+        </ul>
+        </ul>
+      </ul>
+      </td>
+    </tr>
+</td>
+    </tr>
+  </tbody>
+</table>
+
+<div align="center">
+  <b>Components</b>
+</div>
+<table align="center">
+  <tbody>
+    <tr align="center" valign="bottom">
+      <td>
+        <b>Backbones</b>
+      </td>
+      <td>
+        <b>Necks</b>
+      </td>
+      <td>
+        <b>Loss</b>
+      </td>
+      <td>
+        <b>Common</b>
+      </td>
+    </tr>
+    <tr valign="top">
+      <td>
+      <ul>
+        <li>VGG (ICLR'2015)</li>
+        <li>ResNet (CVPR'2016)</li>
+        <li>ResNeXt (CVPR'2017)</li>
+        <li>MobileNetV2 (CVPR'2018)</li>
+        <li><a href="configs/hrnet">HRNet (CVPR'2019)</a></li>
+        <li><a href="configs/empirical_attention">Generalized Attention (ICCV'2019)</a></li>
+        <li><a href="configs/gcnet">GCNet (ICCVW'2019)</a></li>
+        <li><a href="configs/res2net">Res2Net (TPAMI'2020)</a></li>
+        <li><a href="configs/regnet">RegNet (CVPR'2020)</a></li>
+        <li><a href="configs/resnest">ResNeSt (CVPRW'2022)</a></li>
+        <li><a href="configs/pvt">PVT (ICCV'2021)</a></li>
+        <li><a href="configs/swin">Swin (ICCV'2021)</a></li>
+        <li><a href="configs/pvt">PVTv2 (CVMJ'2022)</a></li>
+        <li><a href="configs/resnet_strikes_back">ResNet strikes back (NeurIPSW'2021)</a></li>
+        <li><a href="configs/efficientnet">EfficientNet (ICML'2019)</a></li>
+        <li><a href="configs/convnext">ConvNeXt (CVPR'2022)</a></li>
+      </ul>
+      </td>
+      <td>
+      <ul>
+        <li><a href="configs/pafpn">PAFPN (CVPR'2018)</a></li>
+        <li><a href="configs/nas_fpn">NAS-FPN (CVPR'2019)</a></li>
+        <li><a href="configs/carafe">CARAFE (ICCV'2019)</a></li>
+        <li><a href="configs/fpg">FPG (ArXiv'2020)</a></li>
+        <li><a href="configs/groie">GRoIE (ICPR'2020)</a></li>
+        <li><a href="configs/dyhead">DyHead (CVPR'2021)</a></li>
+      </ul>
+      </td>
+      <td>
+        <ul>
+          <li><a href="configs/ghm">GHM (AAAI'2019)</a></li>
+          <li><a href="configs/gfl">Generalized Focal Loss (NeurIPS'2020)</a></li>
+          <li><a href="configs/seesaw_loss">Seasaw Loss (CVPR'2021)</a></li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li><a href="configs/faster_rcnn/faster_rcnn_r50_fpn_ohem_1x_coco.py">OHEM (CVPR'2016)</a></li>
+          <li><a href="configs/gn">Group Normalization (ECCV'2018)</a></li>
+          <li><a href="configs/dcn">DCN (ICCV'2017)</a></li>
+          <li><a href="configs/dcnv2">DCNv2 (CVPR'2019)</a></li>
+          <li><a href="configs/gn+ws">Weight Standardization (ArXiv'2019)</a></li>
+          <li><a href="configs/pisa">Prime Sample Attention (CVPR'2020)</a></li>
+          <li><a href="configs/strong_baselines">Strong Baselines (CVPR'2021)</a></li>
+          <li><a href="configs/resnet_strikes_back">Resnet strikes back (NeurIPSW'2021)</a></li>
+          <li><a href="configs/rfnext">RF-Next (TPAMI'2022)</a></li>
+        </ul>
+      </td>
+    </tr>
+</td>
+    </tr>
+  </tbody>
+</table>
+
+Some other methods are also supported in [projects using MMDetection](./docs/en/projects.md).
+
+## FAQ
+
+Please refer to [FAQ](docs/en/faq.md) for frequently asked questions.
+
+## Contributing
+
+We appreciate all contributions to improve MMDetection. Ongoing projects can be found in out [GitHub Projects](https://github.com/open-mmlab/mmdetection/projects). Welcome community users to participate in these projects. Please refer to [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the contributing guideline.
+
+## Acknowledgement
+
+MMDetection is an open source project that is contributed by researchers and engineers from various colleges and companies. We appreciate all the contributors who implement their methods or add new features, as well as users who give valuable feedbacks.
+We wish that the toolbox and benchmark could serve the growing research community by providing a flexible toolkit to reimplement existing methods and develop their own new detectors.
 
 ## Citation
-If the project helps your research, please cite this paper.
+
+If you use this toolbox or benchmark in your research, please cite this project.
 
 ```
-@article{Cao_SipMask_ECCV_2020,
-  author =       {Jiale Cao and Rao Muhammad Anwer and Hisham Cholakkal and Fahad Shahbaz Khan and Yanwei Pang and Ling Shao},
-  title =        {SipMask: Spatial Information Preservation for Fast Image and Video Instance Segmentation},
-  journal =      {Proc. European Conference on Computer Vision},
-  year =         {2020}
+@article{mmdetection,
+  title   = {{MMDetection}: Open MMLab Detection Toolbox and Benchmark},
+  author  = {Chen, Kai and Wang, Jiaqi and Pang, Jiangmiao and Cao, Yuhang and
+             Xiong, Yu and Li, Xiaoxiao and Sun, Shuyang and Feng, Wansen and
+             Liu, Ziwei and Xu, Jiarui and Zhang, Zheng and Cheng, Dazhi and
+             Zhu, Chenchen and Cheng, Tianheng and Zhao, Qijie and Li, Buyu and
+             Lu, Xin and Zhu, Rui and Wu, Yue and Dai, Jifeng and Wang, Jingdong
+             and Shi, Jianping and Ouyang, Wanli and Loy, Chen Change and Lin, Dahua},
+  journal= {arXiv preprint arXiv:1906.07155},
+  year={2019}
 }
 ```
 
-## Acknowledgement
-Many thanks to the open source codes, i.e., [FCOS](https://github.com/tianzhi0549/FCOS), [mmdetection](https://github.com/open-mmlab/mmdetection), [YOLACT](https://github.com/dbolya/yolact), and [MaskTrack RCNN](https://github.com/youtubevos/MaskTrackRCNN).
+## License
+
+This project is released under the [Apache 2.0 license](LICENSE).
+
+## Projects in OpenMMLab
+
+- [MMEngine](https://github.com/open-mmlab/mmengine): OpenMMLab foundational library for training deep learning models.
+- [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab foundational library for computer vision.
+- [MMEval](https://github.com/open-mmlab/mmeval): A unified evaluation library for multiple machine learning libraries.
+- [MIM](https://github.com/open-mmlab/mim): MIM installs OpenMMLab packages.
+- [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
+- [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
+- [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.
+- [MMRotate](https://github.com/open-mmlab/mmrotate): OpenMMLab rotated object detection toolbox and benchmark.
+- [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab semantic segmentation toolbox and benchmark.
+- [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab text detection, recognition, and understanding toolbox.
+- [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab pose estimation toolbox and benchmark.
+- [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab 3D human parametric model toolbox and benchmark.
+- [MMSelfSup](https://github.com/open-mmlab/mmselfsup): OpenMMLab self-supervised learning toolbox and benchmark.
+- [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab model compression toolbox and benchmark.
+- [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab fewshot learning toolbox and benchmark.
+- [MMAction2](https://github.com/open-mmlab/mmaction2): OpenMMLab's next-generation action understanding toolbox and benchmark.
+- [MMTracking](https://github.com/open-mmlab/mmtracking): OpenMMLab video perception toolbox and benchmark.
+- [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab optical flow toolbox and benchmark.
+- [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab image and video editing toolbox.
+- [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab image and video generative models toolbox.
+- [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab model deployment framework.
