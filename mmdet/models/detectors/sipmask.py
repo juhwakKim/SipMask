@@ -1,8 +1,4 @@
-from ..builder import DETECTORS
-from .single_stage import SingleStageDetector
 from .base import BaseDetector
-
-import torch.nn as nn
 from ..builder import DETECTORS, build_backbone, build_head, build_neck
 
 from mmdet.core import bbox2result
@@ -21,14 +17,12 @@ class SipMask(BaseDetector):
                  init_cfg=None):
         super(SipMask, self).__init__(init_cfg)
         if pretrained:
-            # warnings.warn('DeprecationWarning: pretrained is deprecated, '
-            #               'please use "init_cfg" instead')
             backbone.pretrained = pretrained
         self.backbone = build_backbone(backbone)
         if neck is not None:
             self.neck = build_neck(neck)
-        bbox_head.update(train_cfg=train_cfg)
-        bbox_head.update(test_cfg=test_cfg)
+        bbox_head.update(train_cfg=copy.deepcopy(train_cfg))
+        bbox_head.update(test_cfg=copy.deepcopy(test_cfg))
         self.bbox_head = build_head(bbox_head)
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
@@ -53,12 +47,18 @@ class SipMask(BaseDetector):
     def forward_train(self,
                       img,
                       img_metas,
-                      gt_bboxes,
+                      gt_masks,
                       gt_labels,
+                      gt_bboxes=None,
                       gt_bboxes_ignore=None,
-                      gt_masks=None):
+                      **kwargs):
+        super(SipMask, self).forward_train(img, img_metas)
         x = self.extract_feat(img)
         outs = self.bbox_head(x)
+
+        for i in range(len(gt_labels)):
+            gt_labels[i] = gt_labels[i] + 1
+
         loss_inputs = outs + (gt_bboxes, gt_labels, img_metas, self.train_cfg)
         losses = self.bbox_head.loss(
             *loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore, gt_masks_list=gt_masks)
@@ -69,10 +69,7 @@ class SipMask(BaseDetector):
         outs = self.bbox_head(x)
         bbox_inputs = outs + (img_metas, self.test_cfg, rescale)
         bbox_list = self.bbox_head.get_bboxes(*bbox_inputs)
-        # bbox_results = [
-        #     bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes)
-        #     for det_bboxes, det_labels in bbox_list
-        # ]
+
         bbox_results = [
             bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes)
             for det_bboxes, det_labels, aa in bbox_list
@@ -82,7 +79,7 @@ class SipMask(BaseDetector):
             aa
             for det_bboxes, det_labels, aa in bbox_list
         ]
-        # aa= bbox_list[0][0][:,-1]>0.5
+
         return list(zip(bbox_results, segm_results))
 
     def aug_test(self, imgs, img_metas, rescale=False):
