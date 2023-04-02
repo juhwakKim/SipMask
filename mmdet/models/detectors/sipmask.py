@@ -4,6 +4,8 @@ from ..builder import DETECTORS, build_backbone, build_head, build_neck
 from mmdet.core import bbox2result
 from mmcv.utils import print_log
 
+import copy
+
 @DETECTORS.register_module
 class SipMask(BaseDetector):
 
